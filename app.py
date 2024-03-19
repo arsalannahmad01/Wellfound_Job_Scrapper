@@ -1,28 +1,24 @@
 import time
 import random
 import json
-from bs4 import BeautifulSoup
 from selenium import webdriver
 import  undetected_chromedriver as uc
-from selenium.webdriver.common.by import By
+from bs4 import BeautifulSoup
+# from selenium.webdriver.common.by import By
+from driver import driver
 
 
-def fetch_urls():
-
-    url = "https://wellfound.com/discover/startups?location=bangalore-urban"
+def fetch_company(url):
     all_urls = []
 
     try:
-
         options = webdriver.ChromeOptions()
         options.add_argument('--headless') 
         options.add_argument('--disable-gpu')
-
         driver = uc.Chrome(options=options)
-
         driver.get(url)
-
         driver.save_screenshot("first_screenshot.png")
+        
         time.sleep(5)
         html = driver.page_source
 
@@ -32,6 +28,9 @@ def fetch_urls():
         link_units = soup.find('div', {'class':'space-y-4 md:columns-2 lg:columns-3 mt-10'}).find_all('div', {'class':'styles_component__uM9l6 h-[280px] relative overflow-hidden rounded-lg border border-gray-400 hover:border-gray-600 hover:bg-gray-100'})
 
         driver.save_screenshot("third_screenshot.png")
+
+        if(not len(link_units)):
+            fetch_company()
 
         count = 0
         for link_unit in link_units:
@@ -48,7 +47,7 @@ def fetch_urls():
         time.sleep(2)
         driver.quit()
         time.sleep(2)
-        fetch_urls()
+        fetch_company()
     finally:
         time.sleep(2)
         driver.save_screenshot("final_screenshot.png")
@@ -61,14 +60,11 @@ def fetch_urls():
 
 def fetch_company_data(url):
 
-    companyJsonData = {}
-
     try:
 
         options = webdriver.ChromeOptions()
         options.add_argument('--headless') 
         options.add_argument('--disable-gpu')
-
         driver = uc.Chrome(options=options)
         driver.get(url)
 
@@ -164,8 +160,11 @@ def fetch_company_data(url):
 
 
 def main():
-    all_urls = fetch_urls()
-    print(all_urls)
+
+    url = "https://wellfound.com/discover/startups?location=bangalore-urban"
+    all_urls = fetch_company(url)
+    
+    # print(json.loads(all_urls))
     for url in all_urls:
         time.sleep(random.uniform(60,  100))
         fetch_company_data(url)
